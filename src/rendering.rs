@@ -39,7 +39,7 @@ pub async fn main() { unsafe {
 
     let mut cam = Cam {
         pos: DVec2::ZERO,
-        zoom: 1.,
+        zoom: 0.000_01,
     };
 
     let mut hold_start: Option<(DVec2, DVec2)> = None;

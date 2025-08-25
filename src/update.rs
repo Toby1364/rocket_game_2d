@@ -14,7 +14,7 @@ use crate::{
 //meh, first make it a problem, then solve it, for now it should be ok. should be a unit change. for example you could use earth masses 
 // and whatever astronomical units
 const G: f64 = 6.6743e-11; // m^3 * kg^-1 * s^-2
-const SIM_SPEED: f64 = 1000.0; // temporary, to see if physics works
+const SIM_SPEED: f64 = 30.0; // temporary, to see if physics works
 
 // Could also be acceleration to not multiply by the mass and then divide it back
 fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
@@ -22,7 +22,7 @@ fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
     let distance_squared = relative_pos.length_squared();
     let direction = relative_pos.normalize();
     
-    return G * body_1.mass * body_2.mass / distance_squared * direction //may be the wrong direction
+    return G * body_1.mass * body_2.mass / distance_squared * -direction //may be the wrong direction
 }
 
 fn now() -> u128 { SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos() }
