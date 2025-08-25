@@ -14,7 +14,7 @@ pub struct Body {
     pub force: DVec2,
 
     pub mass: f64,
-    radius: f64,
+    pub radius: f64,
 }
 
 impl Body {
@@ -42,21 +42,12 @@ impl Body {
         }
     }
 
-    pub fn draw(&self, cam: &rendering::Cam) {
-        let center = (self.pos * cam.zoom) - cam.off();
+    /*pub fn draw(&self, cam: &rendering::Cam) {
+        
+    }*/
 
-        draw_circle(
-            center.x as f32,
-            center.y as f32,
-            (self.radius * cam.zoom) as f32, 
-            WHITE
-        ); 
-        draw_circle(
-            center.x as f32,
-            center.y as f32,
-            (self.radius * cam.zoom) as f32 - 1., 
-            BLACK
-        ); 
+    pub fn draw_pos(&self, cam: &rendering::Cam) -> DVec2 {
+        self.pos * cam.zoom - cam.off()
     }
 
     pub fn update(&mut self) {

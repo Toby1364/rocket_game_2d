@@ -20,6 +20,21 @@ impl Cam {
 pub async fn main() { unsafe {
     let font = load_ttf_font_from_bytes(include_bytes!("fonts/NaturalMono-Regular.ttf")).ok();
 
+    let body_shader = load_material(
+        ShaderSource::Glsl {
+            vertex: include_str!("shaders/body/vert.glsl"),
+            fragment: include_str!("shaders/body/frag.glsl"),
+        },
+        MaterialParams {
+            uniforms: vec![
+                UniformDesc::new("screen_size", UniformType::Float2),
+                UniformDesc::new("bodies", UniformType::Float3).array(50),
+            ],
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
     let mut cam = Cam {
         pos: DVec2::ZERO,
         zoom: 1.,
@@ -51,9 +66,20 @@ pub async fn main() { unsafe {
             }
         }
 
-        /* Rendering */ {
-            for body in &GAME_STATE.bodies { body.draw(&cam) }
+        body_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
+
+        /* Body Rendering */ {
+            let mut body_info = Vec::new();
+            for body in &GAME_STATE.bodies { let pos = body.draw_pos(&cam); body_info.push(vec3(pos.x as f32, pos.y as f32, (body.radius * cam.zoom) as f32)) }
+            while body_info.len() < 50 { body_info.push(Vec3::ZERO) }
+
+            body_shader.set_uniform_array("bodies", &body_info);
+
+            gl_use_material(&body_shader);
+            draw_rectangle(-screen_width()/2., -screen_height()/2., screen_width(), screen_height(), WHITE);
         }
+
+        gl_use_default_material();
 
         draw_text_ex(
             &format!("FPS: {}", get_fps()), 
