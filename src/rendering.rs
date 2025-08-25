@@ -74,7 +74,7 @@ pub async fn main() { unsafe {
 
         /* Body Rendering */ {
             let mut body_info = Vec::new();
-            for body in &GAME_STATE.bodies { body_info.push(vec3(body.pos.x as f32, body.pos.y as f32, body.radius as f32)) }
+            for body in &GAME_STATE.bodies { body_info.push(vec3(body.draw_pos(&cam).x as f32, body.draw_pos(&cam).y as f32, (body.radius * cam.zoom) as f32)) }
             while body_info.len() < 50 { body_info.push(Vec3::ZERO) }
 
             body_shader.set_uniform_array("bodies", &body_info);

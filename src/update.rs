@@ -14,7 +14,7 @@ use crate::{
 //meh, first make it a problem, then solve it, for now it should be ok. should be a unit change. for example you could use earth masses 
 // and whatever astronomical units
 const G: f64 = 6.6743e-11; // m^3 * kg^-1 * s^-2
-const SIM_SPEED: f64 = 1.0; // temporary, to see if physics works
+const SIM_SPEED: f64 = 0.001; // temporary, to see if physics works
 
 // Could also be acceleration to not multiply by the mass and then divide it back
 fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
@@ -34,7 +34,9 @@ pub fn main() { unsafe {
 
     GAME_STATE.bodies.push(Body::new(dvec2(0., 0.), dvec2(0., 0.), 5.972e24, 100.));
 
-    GAME_STATE.bodies.push(Body::new(dvec2(0., 200.), dvec2(50., 0.), 7.348e22, 10.));
+    GAME_STATE.bodies.push(Body::new(dvec2(0., 200.), dvec2(500., 0.), 7.348e22, 10.));
+
+    //if true { return }
 
     loop {
         frame_start = now(); // Sorry for the pull, so how do you want to do rockets and bodies?
@@ -62,13 +64,13 @@ pub fn main() { unsafe {
         // force assumed to be a zero vector here
         for i in 0..GAME_STATE.bodies.len() {
             for j in (i+1)..GAME_STATE.bodies.len() {
-                 //println!("{} : {}", i, j);
-                 let body_1 = &mut GAME_STATE.bodies[i];
-                 let body_2 = &mut GAME_STATE.bodies[j];
-                 let force = gravity_force(body_1, body_2);
+                //println!("{} : {}", i, j);
+                let body_1 = &mut GAME_STATE.bodies[i];
+                let body_2 = &mut GAME_STATE.bodies[j];
+                let force = gravity_force(body_1, body_2);
 
-                 body_1.force += force;
-                 body_2.force -= force; // same force opposite direction
+                body_1.force += force;
+                body_2.force -= force; // same force opposite direction
 
             }
         }
@@ -85,7 +87,7 @@ pub fn main() { unsafe {
         }
 
         GAME_STATE.ups = 1. / frame_time;
-        while now() - frame_start < 50_000 {} // Busy waiting because if we give control to Kernel it might eat a lot more time.
+        while now() - frame_start < 250_000 {} // Busy waiting because if we give control to Kernel it might eat a lot more time.
         frame_time = (now() - frame_start) as f64 / 1_000_000_000.;
     }
 }}
