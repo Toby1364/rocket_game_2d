@@ -1,0 +1,12 @@
+Planets, maybe one sun is enough
+Rocket, presumably some way of zooming in and out
+So then some way of differentiating between rendering "true look" of the rocket and an "icon"
+N-body gravity. Newton's gravitation is enough
+Planets are modeled as perfectly spherical, no oblateness. 2D so no orbit inclination
+(reasonable for most planets, not so reasonable for e.g. pluto, very not reasonable for a lot of satelites)
+
+Rocket is modeled as solid, without stresses, when in-flight as a single part. Although its "stats" can change
+
+
+
+ultimately, maybe someday have asteroids, mining etc.
