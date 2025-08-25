@@ -7,6 +7,8 @@ use crate::{
 
 
 pub struct Cam {
+    pub base_pos: DVec2,
+    pub off_pos: DVec2,
     pub pos: DVec2,
     pub zoom: f64,
 }
@@ -14,8 +16,12 @@ impl Cam {
     pub fn off(&self) -> DVec2 {
         self.pos + dvec2((-screen_width()/2.) as f64, (-screen_height()/2.) as f64)
     }
+    pub fn update(&mut self) { self.pos = self.base_pos + self.off_pos }
 }
 
+enum Track {
+    Body(usize)
+}
 
 pub async fn main() { unsafe {
     let font = load_ttf_font_from_bytes(include_bytes!("fonts/NaturalMono-Regular.ttf")).ok();
@@ -38,11 +44,14 @@ pub async fn main() { unsafe {
     .unwrap();
 
     let mut cam = Cam {
+        base_pos: DVec2::ZERO,
+        off_pos: DVec2::ZERO,
         pos: DVec2::ZERO,
         zoom: 0.000_01,
     };
 
     let mut hold_start: Option<(DVec2, DVec2)> = None;
+    let mut tracking: Option<Track> = None;
 
     loop {
         next_frame().await;
@@ -53,19 +62,39 @@ pub async fn main() { unsafe {
             cam.zoom *= zoom_factor;
             if cam.zoom < 0.000_000_1 { cam.zoom = 0.000_000_1 }
 
-            cam.pos *= zoom_factor;
+            cam.off_pos *= zoom_factor;
+
+            let mp = dvec2(mouse_position().0 as f64, mouse_position().1 as f64);
 
             if is_mouse_button_down(MouseButton::Right) {
                 if let Some(hs) = hold_start {
-                    cam.pos = hs.0 + (hs.1 - dvec2(mouse_position().0 as f64, mouse_position().1 as f64))
+                    cam.off_pos = hs.0 + (hs.1 - mp)
                 }
                 else {
-                    hold_start = Some((cam.pos, dvec2(mouse_position().0 as f64, mouse_position().1 as f64)))
+                    hold_start = Some((cam.off_pos, mp))
                 }
             }
             else {
                 hold_start = None;
             }
+
+            /* Tracking captuere */ {
+                if is_mouse_button_pressed(MouseButton::Left) {
+                    for i in 0..GAME_STATE.bodies.len() {
+                        if mp.distance(GAME_STATE.bodies[i].draw_pos(&cam)) < GAME_STATE.bodies[i].radius * cam.zoom {
+                            cam.off_pos = DVec2::ZERO; tracking = Some(Track::Body(i)); break;
+                        }
+                    }
+                }
+
+                match tracking {
+                    Some(Track::Body(i)) => { cam.base_pos = GAME_STATE.bodies[i].pos * cam.zoom }
+
+                    _ => {}
+                }
+            }
+
+            cam.update();
         }
 
         body_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
@@ -74,7 +103,7 @@ pub async fn main() { unsafe {
 
         /* Body Rendering */ {
             let mut body_info = Vec::new();
-            for body in &GAME_STATE.bodies { body_info.push(vec3(body.draw_pos(&cam).x as f32, body.draw_pos(&cam).y as f32, (body.radius * cam.zoom) as f32)) }
+            for body in &GAME_STATE.bodies { body_info.push(vec3(body.pos.x as f32, body.pos.y as f32, (body.radius) as f32)) }
             while body_info.len() < 50 { body_info.push(Vec3::ZERO) }
 
             body_shader.set_uniform_array("bodies", &body_info);
