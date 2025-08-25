@@ -14,7 +14,7 @@ use crate::{
 //meh, first make it a problem, then solve it, for now it should be ok. should be a unit change. for example you could use earth masses 
 // and whatever astronomical units
 const G: f64 = 6.6743e-11; // m^3 * kg^-1 * s^-2
-const SIM_SPEED: f64 = 0.001; // temporary, to see if physics works
+const SIM_SPEED: f64 = 1000.0; // temporary, to see if physics works
 
 // Could also be acceleration to not multiply by the mass and then divide it back
 fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
@@ -32,9 +32,9 @@ pub fn main() { unsafe {
     let mut frame_time = 1.;
     let mut frame_start;
 
-    GAME_STATE.bodies.push(Body::new(dvec2(0., 0.), dvec2(0., 0.), 5.972e24, 100.));
+    GAME_STATE.bodies.push(Body::new(dvec2(0., 0.), dvec2(0., 0.), 5.972e24, 6_371_000.));
 
-    GAME_STATE.bodies.push(Body::new(dvec2(0., 200.), dvec2(500., 0.), 7.348e22, 10.));
+    GAME_STATE.bodies.push(Body::new(dvec2(0., 384_400_000.), dvec2(1_000_000., 0.), 7.348e22, 1_737_500.0));
 
     //if true { return }
 
@@ -87,7 +87,7 @@ pub fn main() { unsafe {
         }
 
         GAME_STATE.ups = 1. / frame_time;
-        while now() - frame_start < 250_000 {} // Busy waiting because if we give control to Kernel it might eat a lot more time.
+        while now() - frame_start < 50_000 {} // Busy waiting because if we give control to Kernel it might eat a lot more time.
         frame_time = (now() - frame_start) as f64 / 1_000_000_000.;
     }
 }}

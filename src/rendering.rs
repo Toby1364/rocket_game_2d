@@ -51,7 +51,7 @@ pub async fn main() { unsafe {
         /* Cam Control */ {
             let zoom_factor = 1. + ((mouse_wheel().1 as f64) * 0.001);
             cam.zoom *= zoom_factor;
-            if cam.zoom < 0.01 { cam.zoom = 0.01 }
+            if cam.zoom < 0.000_000_1 { cam.zoom = 0.000_000_1 }
 
             cam.pos *= zoom_factor;
 
