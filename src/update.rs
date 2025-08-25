@@ -7,7 +7,22 @@ use crate::{
 
     GAME_STATE,
 };
+// Are you sure you want to be using the real one?
+// Cant see why not to make sure it makes sense. Can always change, but even then, probably change like, densities of bodies, rather than the constant this will make numbers huge, and huge numbers lose precision, 
+// we are also not moving world around player, although you could I guess.
+// Actually yeah, that makes sense. Just work.
+//meh, first make it a problem, then solve it, for now it should be ok. should be a unit change. for example you could use earth masses 
+// and whatever astronomical units
+const G: f64 = 6.6743e-11; // m^3 * kg^-1 * s^-2
 
+// Could also be acceleration to not multiply by the mass and then divide it back
+fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
+    let relative_pos = body_2.pos - body_1.pos;
+    let distance_squared = relative_pos.length_squared();
+    let direction = relative_pos.normalize();
+    
+    return G * body_1.mass * body_2.mass / distance_squared * direction //may be the wrong direction
+}
 
 fn now() -> u128 { SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos() }
 
@@ -43,29 +58,34 @@ pub fn main() { unsafe {
         // Do something:
         //&mut GAME_STATE.bodies;
         
-        // Can't have multiple mutable borrows, use indexes, for i in 0..GAME_STATE.bodies.len() // Can't borrow `x` as reference while `x` is borrowed as mutable.
-        // i dont think i need 2 mutables, im only planning on updating body 1. do i use two?
-        // maybe i do, hold up
-        
-        // not sure if rust has neat cartesian products
+        // force assumed to be a zero vector here
         for i in 0..GAME_STATE.bodies.len() {
-            for j in 0..GAME_STATE.bodies.len() { // shouldn't you go from i..GAME_STATE.bodies.len() to avoid repetition?
-                if i == j { continue; }
-                //wow i cannot think at all. uh, yeah i can see what you mean, literally cant tell if I need all posibilities for something or not
-                //i..len is what, going through all the... whats, pairs? 
+            for j in (i+1)..GAME_STATE.bodies.len() {
+                 //println!("{} : {}", i, j);
+                 let body_1 = &mut GAME_STATE.bodies[i];
+                 let body_2 = &mut GAME_STATE.bodies[j];
+                 let force = gravity_force(body_1, body_2);
+
+                 body_1.force += force;
+                 body_2.force -= force; // same force opposite direction
+
             }
         }
 
-        // Do I do physics updates here, like moving bodies by velocity * delta, like applying forces? Yup, frame_time is delta. 
-        // Do you want to maybe store next_pos so you can iterate over them, and only after set the new positions and velocities?
-        
-        
+        for body in &mut GAME_STATE.bodies {
+            body.vel += body.force / body.mass * frame_time;
+            body.pos += body.vel * frame_time;
 
-
+            // force should be zero at the beginning of the update. Its initialized to zero at start so clearing it after the update should be fine
+            // although again, force only makes sense in the context of this update function.
+            // maybe there is a way to not reallocate without making it larger scope
+            // also is allocating a vec of length 10 really that bad
+            body.force = DVec2::ZERO; 
+        }
         
 
         GAME_STATE.ups = 1. / frame_time;
         while now() - frame_start < 50_000 {} // Busy waiting because if we give control to Kernel it might eat a lot more time.
-        frame_time = (now() - frame_start) as f32 / 1_000_000_000.;
+        frame_time = (now() - frame_start) as f64 / 1_000_000_000.;
     }
 }}

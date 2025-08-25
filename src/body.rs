@@ -42,14 +42,6 @@ impl Body {
         }
     }
 
-    /*pub fn draw(&self, cam: &rendering::Cam) {
-        
-    }*/
-
-    pub fn draw_pos(&self, cam: &rendering::Cam) -> DVec2 {
-        self.pos * cam.zoom - cam.off()
-    }
-
     pub fn update(&mut self) {
         self.pos = self.next_pos;
         self.vel = self.next_vel;

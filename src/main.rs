@@ -8,7 +8,7 @@ mod body;
 struct GameState {
     bodies: Vec<body::Body>,
 
-    ups: f32,
+    ups: f64,
 }
 
 static mut GAME_STATE: GameState = GameState {

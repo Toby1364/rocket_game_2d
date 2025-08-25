@@ -28,6 +28,8 @@ pub async fn main() { unsafe {
         MaterialParams {
             uniforms: vec![
                 UniformDesc::new("screen_size", UniformType::Float2),
+                UniformDesc::new("cam_pos", UniformType::Float2),
+                UniformDesc::new("cam_zoom", UniformType::Float1),
                 UniformDesc::new("bodies", UniformType::Float3).array(50),
             ],
             ..Default::default()
@@ -67,10 +69,12 @@ pub async fn main() { unsafe {
         }
 
         body_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
+        body_shader.set_uniform("cam_pos", cam.pos);
+        body_shader.set_uniform("cam_zoom", cam.zoom);
 
         /* Body Rendering */ {
             let mut body_info = Vec::new();
-            for body in &GAME_STATE.bodies { let pos = body.draw_pos(&cam); body_info.push(vec3(pos.x as f32, pos.y as f32, (body.radius * cam.zoom) as f32)) }
+            for body in &GAME_STATE.bodies { body_info.push(vec3(body.pos.x as f32, body.pos.y as f32, body.radius as f32)) }
             while body_info.len() < 50 { body_info.push(Vec3::ZERO) }
 
             body_shader.set_uniform_array("bodies", &body_info);
