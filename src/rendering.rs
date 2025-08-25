@@ -69,8 +69,8 @@ pub async fn main() { unsafe {
         }
 
         body_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
-        body_shader.set_uniform("cam_pos", cam.pos);
-        body_shader.set_uniform("cam_zoom", cam.zoom);
+        body_shader.set_uniform("cam_pos", vec2(cam.pos.x as f32, cam.pos.y as f32));
+        body_shader.set_uniform("cam_zoom", cam.zoom as f32);
 
         /* Body Rendering */ {
             let mut body_info = Vec::new();
