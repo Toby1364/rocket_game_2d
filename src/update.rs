@@ -7,13 +7,9 @@ use crate::{
 
     GAME_STATE,
 };
-// Are you sure you want to be using the real one?
-// Cant see why not to make sure it makes sense. Can always change, but even then, probably change like, densities of bodies, rather than the constant this will make numbers huge, and huge numbers lose precision, 
-// we are also not moving world around player, although you could I guess.
-// Actually yeah, that makes sense. Just work.
-//meh, first make it a problem, then solve it, for now it should be ok. should be a unit change. for example you could use earth masses 
-// and whatever astronomical units
-const G: f64 = 6.6743e-11 * 1.0; // m^3 * kg^-1 * s^-2
+
+
+const G: f64 = 6.6743e-11; // m^3 * kg^-1 * s^-2
 const SIM_SPEED: f64 = 20.0 * 1000.0; // temporary, to see if physics works
 
 // Could also be acceleration to not multiply by the mass and then divide it back
@@ -22,7 +18,7 @@ fn gravity_force(body_1: &Body, body_2: &Body) -> DVec2 {
     let distance_squared = relative_pos.length_squared();
     let direction = relative_pos.normalize();
     
-    return G * body_1.mass * body_2.mass / distance_squared * direction //may be the wrong direction
+    return G * body_1.mass * body_2.mass / distance_squared * direction
 }
 
 fn now() -> u128 { SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos() }
@@ -33,9 +29,12 @@ pub fn main() { unsafe {
     let mut frame_start;
 
     GAME_STATE.bodies.push(Body::new(dvec2(0., 0.), dvec2(0., 0.), 5.972e24, 6_371_000.));
+    GAME_STATE.bodies.push(Body::new(dvec2(0., 100_000_000.), dvec2(2_000., 0.), 5.972e24, 6_371_000.));
 
     GAME_STATE.bodies.push(Body::new(dvec2(0., 384_400_000.), dvec2(1_000., 0.), 7.348e22, 1_737_500.0));
-    GAME_STATE.bodies.push(Body::new(dvec2(0., -350_000_000.), dvec2(1_000., 0.), 7.348e22, 1_737_500.0));
+    GAME_STATE.bodies.push(Body::new(dvec2(0., 400_400_000.), dvec2(500., 0.), 7.348e11, 627_500.0));
+
+    GAME_STATE.bodies.push(Body::new(dvec2(0., -370_000_000.), dvec2(1_000., 0.), 7.348e22, 1_737_500.0));
 
     loop {
         frame_start = now(); 
