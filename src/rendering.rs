@@ -157,26 +157,33 @@ pub async fn main() { unsafe {
 
         gl_use_default_material();
 
-        draw_text_ex(
-            &format!("FPS: {}", get_fps()), 
-            10., 30., 
-            TextParams {
-                font: font.as_ref(),
-                font_size: 20,
-                color: WHITE,
-                ..Default::default()
-            }
-        );
-        
-        draw_text_ex(
-            &format!("UPS: {:.0}", GAME_STATE.ups), 
-            10., 60., 
-            TextParams {
-                font: font.as_ref(),
-                font_size: 20,
-                color: WHITE,
-                ..Default::default()
-            }
-        );
+        let rp = (GAME_STATE.rockets[0].pos * cam.zoom) - (cam.pos - dvec2(screen_width() as f64, screen_height() as f64) * 0.5);
+        draw_circle(rp.x as f32, rp.y as f32, 2_000_000. * cam.zoom as f32, RED);
+
+        /* Interface */ {
+            draw_text_ex(
+                &format!("FPS: {}", get_fps()), 
+                10., 30., 
+                TextParams {
+                    font: font.as_ref(),
+                    font_size: 20,
+                    color: WHITE,
+                    ..Default::default()
+                }
+            );
+            
+            draw_text_ex(
+                &format!("UPS: {:.0}", GAME_STATE.ups), 
+                10., 60., 
+                TextParams {
+                    font: font.as_ref(),
+                    font_size: 20,
+                    color: WHITE,
+                    ..Default::default()
+                }
+            );
+
+            
+        }
     }
 }}

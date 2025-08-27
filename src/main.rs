@@ -9,6 +9,9 @@ mod physics;
 struct GameState {
     bodies: Vec<body::Body>,
 
+    rockets: Vec<body::Rocket>,
+    engine_working: bool,
+
     sim_speed: f64,
 
     ups: f64,
@@ -16,6 +19,9 @@ struct GameState {
 
 static mut GAME_STATE: GameState = GameState {
     bodies: Vec::new(),
+
+    rockets: Vec::new(),
+    engine_working: true,
 
     sim_speed: 20.,
 

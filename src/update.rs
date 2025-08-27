@@ -24,16 +24,23 @@ pub fn main() { unsafe {
 
     /* Moon moon */ GAME_STATE.bodies.push(Body::new(dvec2(0., -370_000_000.), dvec2(1_000., -29_800.), 7.348e22, 1_737_500.0));
 
-    let mut rocket = Rocket {
+    GAME_STATE.rockets.push(Rocket {
         pos: dvec2(0.0, 100_000_000.0),
         vel: dvec2(0.0, 0.0),
         force: dvec2(0.0, 0.0),
-        mass: 1000.0,
-    };
+        dry_mass: 1000.0,
+        fuel_mass: 0.,
+        thrust: 100.0, // should actually be about 1000 times more, but we're currently simulating very quickly
+        ..Default::default()
+    });
 
+    let rocket = &mut GAME_STATE.rockets[0];
+    
     loop {
         frame_start = now(); 
         
+        let physics_delta_t = frame_time * GAME_STATE.sim_speed;
+
         // force assumed to be a zero vector here
         for i in 0..GAME_STATE.bodies.len() {
             for j in (i+1)..GAME_STATE.bodies.len() {
@@ -48,15 +55,18 @@ pub fn main() { unsafe {
 
         rocket.force = DVec2::ZERO;
         for body in &mut GAME_STATE.bodies {
-            body.vel += body.force / body.mass * frame_time * GAME_STATE.sim_speed;
-            body.pos += body.vel * frame_time * GAME_STATE.sim_speed;
+            body.vel += body.force / body.mass * physics_delta_t;
+            body.pos += body.vel * physics_delta_t;
 
             body.force = DVec2::ZERO;
 
-            rocket.force += gravity_force(rocket.pos, body.pos, rocket.mass, body.mass);
+            rocket.force += gravity_force(rocket.pos, body.pos, rocket.mass(), body.mass);
         }
-        rocket.vel += rocket.force / rocket.mass * frame_time;
-        rocket.pos += rocket.vel * frame_time;
+        if GAME_STATE.engine_working {
+            rocket.force += rocket.thrust;
+        }
+        rocket.vel += rocket.force / rocket.mass() * physics_delta_t;
+        rocket.pos += rocket.vel * physics_delta_t;
 
 
         GAME_STATE.ups = 1. / frame_time;

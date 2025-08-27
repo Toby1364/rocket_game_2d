@@ -1,3 +1,5 @@
+use std::default;
+
 use macroquad::prelude::*;
 // Structure, I know you hate it.
 
@@ -33,5 +35,26 @@ pub struct Rocket {
     pub pos: DVec2,
     pub vel: DVec2,
     pub force: DVec2,
-    pub mass: f64,
+    pub dry_mass: f64,
+    pub fuel_mass: f64,
+    pub thrust: f64,
+}
+
+impl Default for Rocket {
+    fn default() -> Self {
+        Self {
+            pos: DVec2::ZERO,
+            vel: DVec2::ZERO,
+            force: DVec2::ZERO,
+            dry_mass: 0.,
+            fuel_mass: 0.,
+            thrust: 0.,
+        }
+    }
+}
+
+impl Rocket {
+    pub fn mass(&self) -> f64 {
+        self.dry_mass + self.fuel_mass
+    }
 }
