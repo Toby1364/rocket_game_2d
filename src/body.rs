@@ -1,5 +1,3 @@
-use std::default;
-
 use macroquad::prelude::*;
 // Structure, I know you hate it.
 
@@ -40,6 +38,7 @@ pub struct Rocket {
     pub mass_flow_rate: f64, // kg/s
     pub effective_exhaust_velocity: f64, // m/s
     pub rotation: f64,
+    pub angular_velocity: f64,
 }
 
 impl Default for Rocket {
@@ -53,6 +52,7 @@ impl Default for Rocket {
             mass_flow_rate: 0.0,
             effective_exhaust_velocity: 0.0,
             rotation: 0.,
+            angular_velocity: 0.0,
         }
     }
 }

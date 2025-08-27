@@ -7,9 +7,7 @@ uniform float cam_zoom;
 uniform vec3 bodies[50]; // x, y, radius
 
 void main() {
-    vec2 frag_screen = vec2(gl_FragCoord.x, screen_size.y - gl_FragCoord.y);
-
-    gl_FragColor = vec4(0.0);
+    vec2 frag = vec2(gl_FragCoord.x, screen_size.y - gl_FragCoord.y);
 
     vec3 color = vec3(0.0);
 
@@ -20,7 +18,7 @@ void main() {
 
         if (radius <= 0.0) continue;
 
-        float dist = distance(frag_screen, center);
+        float dist = distance(frag, center);
 
         if (dist < radius) {
             float intensity = dist / radius;

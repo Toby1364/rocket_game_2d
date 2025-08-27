@@ -29,7 +29,7 @@ pub async fn main() { unsafe {
 
     let body_shader = load_material(
         ShaderSource::Glsl {
-            vertex: include_str!("shaders/body/vert.glsl"),
+            vertex: include_str!("shaders/default/vert.glsl"),
             fragment: include_str!("shaders/body/frag.glsl"),
         },
         MaterialParams {
@@ -54,7 +54,7 @@ pub async fn main() { unsafe {
 
     let body_traj_shader = load_material(
         ShaderSource::Glsl {
-            vertex: include_str!("shaders/body_trajectory/vert.glsl"),
+            vertex: include_str!("shaders/default/vert.glsl"),
             fragment: include_str!("shaders/body_trajectory/frag.glsl"),
         },
         MaterialParams {
@@ -63,6 +63,29 @@ pub async fn main() { unsafe {
                 UniformDesc::new("cam_pos", UniformType::Float2),
                 UniformDesc::new("cam_zoom", UniformType::Float1),
                 UniformDesc::new("bodies", UniformType::Float2).array(100),
+            ],
+            pipeline_params: PipelineParams {
+                color_blend: Some(BlendState::new(
+                    Equation::Add,
+                    BlendFactor::Value(BlendValue::SourceAlpha),
+                    BlendFactor::OneMinusValue(BlendValue::SourceAlpha))
+                ),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    let ui_shader = load_material(
+        ShaderSource::Glsl {
+            vertex: include_str!("shaders/default/vert.glsl"),
+            fragment: include_str!("shaders/ui/frag.glsl"),
+        },
+        MaterialParams {
+            uniforms: vec![
+                UniformDesc::new("screen_size", UniformType::Float2),
+                UniformDesc::new("sim_speed", UniformType::Float1),
             ],
             pipeline_params: PipelineParams {
                 color_blend: Some(BlendState::new(
@@ -149,24 +172,30 @@ pub async fn main() { unsafe {
 
             body_shader.set_uniform_array("bodies", &body_info);
 
-            gl_use_material(&body_shader);
-            draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
+            gl_use_material(&body_shader); draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
 
-
-
-            gl_use_material(&body_traj_shader);
-            draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
+            gl_use_material(&body_traj_shader); draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
         }
+
+        ui_shader.set_uniform("sim_speed", GAME_STATE.sim_speed as f32);
+        ui_shader.set_uniform("screen_size",vec2(sw, sh));
+
+        gl_use_material(&ui_shader); draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
+
+
 
         gl_use_default_material();
 
         let rp = (GAME_STATE.rockets[0].pos * cam.zoom) - cam.off();
-        draw_circle(rp.x as f32, rp.y as f32, 2_000_000. * cam.zoom as f32, RED);
+        draw_circle(rp.x as f32, rp.y as f32, /*2_000_000. * cam.zoom as f32*/ 20., RED);
+
+        let rp = (GAME_STATE.rockets[1].pos * cam.zoom) - cam.off();
+        draw_circle(rp.x as f32, rp.y as f32, /*2_000_000. * cam.zoom as f32*/ 20., YELLOW);
 
         /* Interface */ {
             draw_text_ex(
                 &format!("FPS: {}", get_fps()), 
-                10., 70., 
+                10., 80., 
                 TextParams {
                     font: font.as_ref(),
                     font_size: 20,
@@ -177,7 +206,7 @@ pub async fn main() { unsafe {
             
             draw_text_ex(
                 &format!("UPS: {:.0}", GAME_STATE.ups), 
-                10., 100., 
+                10., 110., 
                 TextParams {
                     font: font.as_ref(),
                     font_size: 20,
@@ -186,7 +215,19 @@ pub async fn main() { unsafe {
                 }
             );
 
-            draw_rectangle(0., 0.,sw, 40., Color::new(0.6, 0.6, 0.6, 1.));
+            if is_mouse_button_down(MouseButton::Left) {
+                let mp = Vec2::from(mouse_position());
+
+                if mp.y < 60. && mp.x > 20. && mp.x < 240. {
+                    if mp.x < 30. { GAME_STATE.sim_speed = 1. }
+                    else {
+                        GAME_STATE.sim_speed = 5_000_000. * (((mp.x as f64) - 30.) / 200.).powf(2.).min(1.);
+                    }
+                }
+            }
+
+            /*draw_rectangle(0., 0.,sw, 40., Color::new(0.6, 0.6, 0.6, 1.));
+            draw_rectangle(30., 5., 200., 30., BLACK);*/
         }
     }
 }}

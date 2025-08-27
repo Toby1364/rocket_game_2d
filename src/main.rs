@@ -23,7 +23,7 @@ static mut GAME_STATE: GameState = GameState {
     rockets: Vec::new(),
     engine_working: true,
 
-    sim_speed: 20.,
+    sim_speed: 1.,
 
     ups: 0.
 };
