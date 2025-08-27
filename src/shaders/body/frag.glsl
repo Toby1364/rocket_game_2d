@@ -9,15 +9,15 @@ uniform vec3 bodies[50]; // x, y, radius
 void main() {
     vec2 frag_screen = vec2(gl_FragCoord.x, screen_size.y - gl_FragCoord.y);
 
+    gl_FragColor = vec4(0.0);
+
     vec3 color = vec3(0.0);
 
     for (int i = 0; i < 50; i++) {
         vec2 body_pos = bodies[i].xy;
-
-    
         vec2 center = body_pos * cam_zoom - (cam_pos - 0.5 * screen_size);
-
         float radius = bodies[i].z * cam_zoom; 
+
         if (radius <= 0.0) continue;
 
         float dist = distance(frag_screen, center);
@@ -26,11 +26,10 @@ void main() {
             float intensity = dist / radius;
 
             float edge = 1.0;
-            float alpha = smoothstep(radius, radius - edge, dist);
+            float a = smoothstep(radius, radius - edge, dist);
 
-            color = vec3(mix(0.0, intensity, alpha));
+            gl_FragColor = vec4(vec3(mix(0.0, intensity, a)), 1.0);
+            break;
         }
     }
-
-    gl_FragColor = vec4(color, 1.0);
 }

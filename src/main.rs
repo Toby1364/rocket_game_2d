@@ -4,15 +4,20 @@ use macroquad::prelude::*;
 mod update;
 mod rendering;
 mod body;
+mod physics;
 
 struct GameState {
     bodies: Vec<body::Body>,
+
+    sim_speed: f64,
 
     ups: f64,
 }
 
 static mut GAME_STATE: GameState = GameState {
     bodies: Vec::new(),
+
+    sim_speed: 20.,
 
     ups: 0.
 };

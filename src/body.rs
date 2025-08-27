@@ -8,7 +8,6 @@ use crate::{
 pub struct Body {
     pub pos: DVec2,
     pub vel: DVec2,
-
     pub force: DVec2,
 
     pub mass: f64,
@@ -21,10 +20,18 @@ impl Body {
             pos,
             vel,
             force: DVec2::ZERO,
+
             mass,
             radius,
         }
     }
 
     pub fn draw_pos(&self, cam: &rendering::Cam) -> DVec2 { self.pos * cam.zoom - cam.off() }
+}
+
+pub struct Rocket {
+    pub pos: DVec2,
+    pub vel: DVec2,
+    pub force: DVec2,
+    pub mass: f64,
 }

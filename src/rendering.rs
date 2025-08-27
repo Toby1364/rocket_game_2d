@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use macroquad::miniquad::*;
 
 use crate::{
 
@@ -38,6 +39,39 @@ pub async fn main() { unsafe {
                 UniformDesc::new("cam_zoom", UniformType::Float1),
                 UniformDesc::new("bodies", UniformType::Float3).array(50),
             ],
+            pipeline_params: PipelineParams {
+                color_blend: Some(BlendState::new(
+                    Equation::Add,
+                    BlendFactor::Value(BlendValue::SourceAlpha),
+                    BlendFactor::OneMinusValue(BlendValue::SourceAlpha))
+                ),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    let body_traj_shader = load_material(
+        ShaderSource::Glsl {
+            vertex: include_str!("shaders/body_trajectory/vert.glsl"),
+            fragment: include_str!("shaders/body_trajectory/frag.glsl"),
+        },
+        MaterialParams {
+            uniforms: vec![
+                UniformDesc::new("screen_size", UniformType::Float2),
+                UniformDesc::new("cam_pos", UniformType::Float2),
+                UniformDesc::new("cam_zoom", UniformType::Float1),
+                UniformDesc::new("bodies", UniformType::Float2).array(100),
+            ],
+            pipeline_params: PipelineParams {
+                color_blend: Some(BlendState::new(
+                    Equation::Add,
+                    BlendFactor::Value(BlendValue::SourceAlpha),
+                    BlendFactor::OneMinusValue(BlendValue::SourceAlpha))
+                ),
+                ..Default::default()
+            },
             ..Default::default()
         },
     )
@@ -60,7 +94,7 @@ pub async fn main() { unsafe {
         /* Cam Control */ {
             let zoom_factor = 1. + ((mouse_wheel().1 as f64) * 0.001);
             cam.zoom *= zoom_factor;
-            if cam.zoom < 0.000_000_1 { cam.zoom = 0.000_000_1 }
+            if cam.zoom < 0.000_000_001 { cam.zoom = 0.000_000_001 }
 
             cam.off_pos *= zoom_factor;
 
@@ -81,7 +115,7 @@ pub async fn main() { unsafe {
             /* Tracking captuere */ {
                 if is_mouse_button_pressed(MouseButton::Left) {
                     for i in 0..GAME_STATE.bodies.len() {
-                        if mp.distance(GAME_STATE.bodies[i].draw_pos(&cam)) < GAME_STATE.bodies[i].radius * cam.zoom {
+                        if mp.distance(GAME_STATE.bodies[i].draw_pos(&cam)) < (GAME_STATE.bodies[i].radius * cam.zoom).max(5.) {
                             cam.off_pos = DVec2::ZERO; tracking = Some(Track::Body(i)); break;
                         }
                     }
@@ -101,6 +135,10 @@ pub async fn main() { unsafe {
         body_shader.set_uniform("cam_pos", vec2(cam.pos.x as f32, cam.pos.y as f32));
         body_shader.set_uniform("cam_zoom", cam.zoom as f32);
 
+        body_traj_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
+        body_traj_shader.set_uniform("cam_pos", vec2(cam.pos.x as f32, cam.pos.y as f32));
+        body_traj_shader.set_uniform("cam_zoom", cam.zoom as f32);
+
         /* Body Rendering */ {
             let mut body_info = Vec::new();
             for body in &GAME_STATE.bodies { body_info.push(vec3(body.pos.x as f32, body.pos.y as f32, (body.radius) as f32)) }
@@ -109,6 +147,11 @@ pub async fn main() { unsafe {
             body_shader.set_uniform_array("bodies", &body_info);
 
             gl_use_material(&body_shader);
+            draw_rectangle(-screen_width()/2., -screen_height()/2., screen_width(), screen_height(), WHITE);
+
+
+
+            gl_use_material(&body_traj_shader);
             draw_rectangle(-screen_width()/2., -screen_height()/2., screen_width(), screen_height(), WHITE);
         }
 
