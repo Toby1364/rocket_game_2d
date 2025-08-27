@@ -91,6 +91,9 @@ pub async fn main() { unsafe {
         next_frame().await;
         clear_background(BLACK);
 
+        let sw = screen_width();
+        let sh = screen_height();
+
         /* Cam Control */ {
             let zoom_factor = 1. + ((mouse_wheel().1 as f64) * 0.001);
             cam.zoom *= zoom_factor;
@@ -131,11 +134,11 @@ pub async fn main() { unsafe {
             cam.update();
         }
 
-        body_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
+        body_shader.set_uniform("screen_size", vec2(sw, sh));
         body_shader.set_uniform("cam_pos", vec2(cam.pos.x as f32, cam.pos.y as f32));
         body_shader.set_uniform("cam_zoom", cam.zoom as f32);
 
-        body_traj_shader.set_uniform("screen_size", vec2(screen_width(), screen_height()));
+        body_traj_shader.set_uniform("screen_size", vec2(sw, sh));
         body_traj_shader.set_uniform("cam_pos", vec2(cam.pos.x as f32, cam.pos.y as f32));
         body_traj_shader.set_uniform("cam_zoom", cam.zoom as f32);
 
@@ -147,23 +150,23 @@ pub async fn main() { unsafe {
             body_shader.set_uniform_array("bodies", &body_info);
 
             gl_use_material(&body_shader);
-            draw_rectangle(-screen_width()/2., -screen_height()/2., screen_width(), screen_height(), WHITE);
+            draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
 
 
 
             gl_use_material(&body_traj_shader);
-            draw_rectangle(-screen_width()/2., -screen_height()/2., screen_width(), screen_height(), WHITE);
+            draw_rectangle(-sw/2., -sh/2., sw, sh, WHITE);
         }
 
         gl_use_default_material();
 
-        let rp = (GAME_STATE.rockets[0].pos * cam.zoom) - (cam.pos - dvec2(screen_width() as f64, screen_height() as f64) * 0.5);
+        let rp = (GAME_STATE.rockets[0].pos * cam.zoom) - cam.off();
         draw_circle(rp.x as f32, rp.y as f32, 2_000_000. * cam.zoom as f32, RED);
 
         /* Interface */ {
             draw_text_ex(
                 &format!("FPS: {}", get_fps()), 
-                10., 30., 
+                10., 70., 
                 TextParams {
                     font: font.as_ref(),
                     font_size: 20,
@@ -174,7 +177,7 @@ pub async fn main() { unsafe {
             
             draw_text_ex(
                 &format!("UPS: {:.0}", GAME_STATE.ups), 
-                10., 60., 
+                10., 100., 
                 TextParams {
                     font: font.as_ref(),
                     font_size: 20,
@@ -183,7 +186,7 @@ pub async fn main() { unsafe {
                 }
             );
 
-            
+            draw_rectangle(0., 0.,sw, 40., Color::new(0.6, 0.6, 0.6, 1.));
         }
     }
 }}

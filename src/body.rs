@@ -32,12 +32,14 @@ impl Body {
 }
 
 pub struct Rocket {
-    pub pos: DVec2,
-    pub vel: DVec2,
-    pub force: DVec2,
-    pub dry_mass: f64,
-    pub fuel_mass: f64,
-    pub thrust: f64,
+    pub pos: DVec2, // m
+    pub vel: DVec2, // m/s
+    pub force: DVec2, // newtons
+    pub dry_mass: f64, // kg
+    pub fuel_mass: f64, // kg
+    pub mass_flow_rate: f64, // kg/s
+    pub effective_exhaust_velocity: f64, // m/s
+    pub rotation: f64,
 }
 
 impl Default for Rocket {
@@ -48,7 +50,9 @@ impl Default for Rocket {
             force: DVec2::ZERO,
             dry_mass: 0.,
             fuel_mass: 0.,
-            thrust: 0.,
+            mass_flow_rate: 0.0,
+            effective_exhaust_velocity: 0.0,
+            rotation: 0.,
         }
     }
 }

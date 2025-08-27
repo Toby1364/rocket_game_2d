@@ -29,8 +29,9 @@ pub fn main() { unsafe {
         vel: dvec2(0.0, 0.0),
         force: dvec2(0.0, 0.0),
         dry_mass: 1000.0,
-        fuel_mass: 0.,
-        thrust: 100.0, // should actually be about 1000 times more, but we're currently simulating very quickly
+        fuel_mass: 1000.,
+        mass_flow_rate: 100.0, 
+        effective_exhaust_velocity: 2000.0,
         ..Default::default()
     });
 
@@ -62,8 +63,9 @@ pub fn main() { unsafe {
 
             rocket.force += gravity_force(rocket.pos, body.pos, rocket.mass(), body.mass);
         }
-        if GAME_STATE.engine_working {
-            rocket.force += rocket.thrust;
+        if GAME_STATE.engine_working && rocket.fuel_mass > 0.0 {
+            let thrust = f64::min(rocket.fuel_mass, rocket.mass_flow_rate) * rocket.effective_exhaust_velocity;
+            rocket.force += dvec2(thrust, 0.0).rotate(DVec2::from_angle(rocket.rotation));
         }
         rocket.vel += rocket.force / rocket.mass() * physics_delta_t;
         rocket.pos += rocket.vel * physics_delta_t;
